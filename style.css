@@ -1,4 +1,4 @@
-  :root{
+:root{
     --navy-950:#001D39;
     --navy-800:#0A4174;
     --blue-600:#49769F;
@@ -40,9 +40,7 @@
   }
   .topbar-title{display:flex;align-items:center;gap:10px;}
   .brand-dot{width:10px;height:10px;border-radius:50%;background:var(--sky-300);box-shadow:0 0 0 5px rgba(123,189,232,.25);flex:none;}
-  .topbar h1{
-    font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;letter-spacing:.4px;
-  }
+  .topbar h1{font-size:16px;font-weight:700;letter-spacing:.2px;}
   .topbar p{margin:2px 0 0;font-size:12px;color:var(--sky-100);opacity:.85;}
   .month-select{
     background:rgba(255,255,255,.14);
@@ -402,20 +400,6 @@
   .toast.error{background:var(--danger);}
   .toast.show{transform:translateX(-50%) translateY(0);}
 
-  /* ---------- Boot error banner (shown when the very first load fails) ---------- */
-  .boot-error-banner{
-    position:fixed;left:14px;right:14px;bottom:14px;z-index:300;
-    background:var(--danger);color:#fff;border-radius:var(--radius-md);
-    padding:14px 16px;font-size:12.5px;line-height:1.5;font-weight:600;
-    box-shadow:0 10px 26px rgba(0,0,0,.3);
-    animation:slideUp .25s ease;
-  }
-  .boot-error-banner strong{font-family:'Outfit',sans-serif;font-size:13.5px;}
-  .boot-error-banner button{
-    margin-top:8px;border:none;background:#fff;color:var(--danger);
-    border-radius:var(--radius-pill);padding:7px 16px;font-size:12px;font-weight:800;cursor:pointer;
-  }
-
 /* =========================================================
    LOCK SCREEN
    ========================================================= */
@@ -432,27 +416,26 @@
 #keypadModal{z-index:210;}
 
 .lock-logo-wrap{
-  position:relative;width:112px;height:112px;
-  display:flex;align-items:center;justify-content:center;margin-bottom:8px;
+  position:relative;width:100px;height:100px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:6px;
 }
 .lock-pulse{
   position:absolute;inset:0;border-radius:50%;
-  border:1.5px solid var(--sky-300);
-  animation:pulseRing 1.8s cubic-bezier(0.4,0,0.6,1) infinite;
+  border:2px solid var(--sky-300);
+  animation:pulseRing 2.6s cubic-bezier(0.4,0,0.6,1) infinite;
   opacity:0;
 }
-.lock-pulse.p2{animation-delay:.45s;}
-.lock-pulse.p3{animation-delay:.9s;}
-.lock-pulse.p4{animation-delay:1.35s;}
+.lock-pulse.p2{animation-delay:.85s;}
+.lock-pulse.p3{animation-delay:1.7s;}
 @keyframes pulseRing{
-  0%{transform:scale(.82);opacity:.45;}
-  100%{transform:scale(1.32);opacity:0;}
+  0%{transform:scale(.75);opacity:.55;}
+  100%{transform:scale(1.9);opacity:0;}
 }
 .lock-logo{
-  position:relative;z-index:2;width:86px;height:86px;border-radius:50%;
+  position:relative;z-index:2;width:74px;height:74px;border-radius:50%;
   background:linear-gradient(135deg,#ffffff,var(--sky-100));
   display:flex;align-items:center;justify-content:center;overflow:hidden;
-  box-shadow:0 12px 28px rgba(0,0,0,.35),0 0 0 4px rgba(255,255,255,.9),0 0 0 5px rgba(123,189,232,.35);
+  box-shadow:0 12px 28px rgba(0,0,0,.35);
   animation:logoBreathe 3s ease-in-out infinite;
 }
 .lock-logo svg{width:36px;height:36px;}
@@ -463,10 +446,8 @@
 }
 
 .lock-brand{
-  color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:700;
-  font-size:27px;letter-spacing:.8px;margin:6px 0 0;
-  background:linear-gradient(100deg,#ffffff 20%,var(--sky-100) 55%,var(--sky-300) 80%);
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  color:#fff;font-family:'Outfit',sans-serif;font-weight:800;
+  font-size:24px;letter-spacing:.5px;margin:2px 0 0;
 }
 
 .lock-status{
@@ -483,16 +464,7 @@
 .lock-unlock-btn:active{background:rgba(255,255,255,.22);}
 
 /* ---------- Keypad modal ---------- */
-/* Floats as its own rounded card with breathing room on every side,
-   instead of being flush against the bottom edge of the screen. */
-#keypadModal{align-items:center;justify-content:center;padding:20px;}
-.keypad-card{
-  max-width:300px;width:100%;text-align:center;
-  border-radius:28px;padding:28px 22px 24px;margin:0;
-  box-shadow:0 24px 55px rgba(0,10,25,.5),0 0 0 1px rgba(255,255,255,.06);
-  animation:keypadPopIn .28s cubic-bezier(.34,1.56,.64,1);
-}
-@keyframes keypadPopIn{from{transform:scale(.92);opacity:0;}to{transform:scale(1);opacity:1;}}
+.keypad-card{max-width:300px;text-align:center;padding-top:26px;}
 .keypad-card.shake{animation:keypadShake .42s;}
 @keyframes keypadShake{
   10%,90%{transform:translateX(-1px);}
@@ -502,12 +474,12 @@
 }
 .keypad-logo-wrap{display:flex;justify-content:center;margin-bottom:14px;}
 .keypad-logo{
-  width:46px;height:46px;border-radius:50%;overflow:hidden;
+  width:52px;height:52px;border-radius:50%;overflow:hidden;
   background:linear-gradient(135deg,var(--navy-800),var(--blue-600));
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 6px 16px rgba(10,65,116,.3),0 0 0 3px rgba(255,255,255,.95),0 0 0 4px rgba(123,189,232,.3);
+  box-shadow:0 6px 16px rgba(10,65,116,.3);
 }
-.keypad-logo svg{width:24px;height:24px;}
+.keypad-logo svg{width:26px;height:26px;}
 .keypad-logo img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
 
 .pin-dots{display:flex;justify-content:center;gap:14px;margin:4px 0 8px;}
@@ -524,26 +496,14 @@
 }
 .pin-error.show{opacity:1;}
 
-.keypad-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px;}
+.keypad-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px;}
 .key-btn{
   aspect-ratio:1;border:none;border-radius:50%;
-  background:linear-gradient(165deg,#ffffff 0%,var(--sky-100) 55%,var(--sky-300) 135%);
-  color:var(--navy-950);
+  background:var(--sky-100);color:var(--navy-950);
   font-family:'Outfit',sans-serif;font-weight:700;font-size:19px;cursor:pointer;
-  box-shadow:
-    0 5px 12px rgba(10,65,116,.22),
-    inset 0 1.5px 0 rgba(255,255,255,.95),
-    inset 0 -4px 7px rgba(78,142,162,.3);
-  transition:transform .1s ease,box-shadow .1s ease;
 }
-.key-btn:active{
-  background:linear-gradient(165deg,var(--sky-300) 0%,var(--teal-400) 100%);
-  transform:scale(.92);
-  box-shadow:
-    0 2px 4px rgba(10,65,116,.28),
-    inset 0 2px 6px rgba(0,29,57,.2);
-}
-.key-empty{background:none;box-shadow:none;cursor:default;}
-.key-empty:active{background:none;box-shadow:none;transform:none;}
-.key-back{background:none;box-shadow:none;color:var(--muted);font-size:16px;}
-.key-back:active{background:none;box-shadow:none;color:var(--navy-800);transform:scale(.92);}
+.key-btn:active{background:var(--sky-300);}
+.key-empty{background:none;cursor:default;}
+.key-empty:active{background:none;}
+.key-back{background:none;color:var(--muted);font-size:16px;}
+.key-back:active{background:none;color:var(--navy-800);}
