@@ -11,7 +11,7 @@
 
 // PASTE your deployed Apps Script Web App URL here (ends in /exec).
 // See DEPLOY_INSTRUCTIONS.md for how to get this.
-var API_URL = 'https://script.google.com/macros/s/AKfycbxb_K3z4royy_Du6CAfgtqueLutjKOQHp9WHFhrLWGDpHh34OrH0MP3lASedqeyqdMhzA/exec';
+var API_URL = 'https://script.google.com/macros/s/AKfycbxklnWCn2MGufaBmuOl6RmHsXnHThhFlZvlQFX3yJZOEwmGm-3-IWzOknu9eKk2sb39kg/exec';
 
 var API_WRITE_ACTIONS = [
   'addTransaction', 'updateTransaction', 'deleteTransaction',
@@ -24,11 +24,6 @@ var API_ALL_ACTIONS = API_WRITE_ACTIONS.concat([
 ]);
 
 function apiCall_(action, args) {
-  if (!API_URL || API_URL.indexOf('PASTE_YOUR') !== -1) {
-    return Promise.reject(new Error(
-      'API_URL is not set in app.js — paste your Apps Script /exec URL there (see DEPLOY_INSTRUCTIONS.md).'
-    ));
-  }
   var isWrite = API_WRITE_ACTIONS.indexOf(action) !== -1;
   var req = isWrite
     ? fetch(API_URL, {
@@ -254,36 +249,16 @@ document.addEventListener('DOMContentLoaded', initLockScreen);
     bindCalculator();
     bindCancelEdit();
 
-    google.script.run.withSuccessHandler(onSettingsLoaded).withFailureHandler(showBootError).getSettings();
+    google.script.run.withSuccessHandler(onSettingsLoaded).getSettings();
 
     google.script.run.withSuccessHandler(function (months) {
       state.months = months;
       state.month = months[0];
       renderMonthSelect();
-      google.script.run.withSuccessHandler(onCategoriesLoaded).withFailureHandler(showBootError).getCategories();
+      google.script.run.withSuccessHandler(onCategoriesLoaded).getCategories();
       loadDashboard();
       loadTransactions();
-    }).withFailureHandler(showBootError).getMonthsList();
-  }
-
-  /** Errors during the very first load (before anything is on screen yet) need to be
-   *  loud and persistent — a 2s toast is easy to miss when the whole page is still blank. */
-  var bootErrorShown = false;
-  function showBootError(e) {
-    showErr(e);
-    if (bootErrorShown) return;
-    bootErrorShown = true;
-    var banner = document.createElement('div');
-    banner.className = 'boot-error-banner';
-    banner.innerHTML = '<strong>Could not load data.</strong><br>' +
-      escapeHtml((e && e.message) || tr('errGeneric')) +
-      '<br><button type="button" id="bootErrorRetry">Retry</button>';
-    document.body.appendChild(banner);
-    document.getElementById('bootErrorRetry').addEventListener('click', function () {
-      banner.remove();
-      bootErrorShown = false;
-      init();
-    });
+    }).getMonthsList();
   }
 
   /* ---------------- Translations ---------------- */
@@ -830,7 +805,7 @@ document.addEventListener('DOMContentLoaded', initLockScreen);
       renderMonthSelect();
       loadDashboard();
       if (state.searchQuery) runSearch(); else loadTransactions();
-    }).withFailureHandler(showErr).getMonthsList();
+    }).getMonthsList();
   }
 
   function onCategoriesLoaded(cats) {
