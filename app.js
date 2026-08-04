@@ -11,7 +11,7 @@
 
 // PASTE your deployed Apps Script Web App URL here (ends in /exec).
 // See DEPLOY_INSTRUCTIONS.md for how to get this.
-var API_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+var API_URL = 'https://script.google.com/macros/s/AKfycbxb_K3z4royy_Du6CAfgtqueLutjKOQHp9WHFhrLWGDpHh34OrH0MP3lASedqeyqdMhzA/exec';
 
 var API_WRITE_ACTIONS = [
   'addTransaction', 'updateTransaction', 'deleteTransaction',
