@@ -11,7 +11,7 @@
 
 // PASTE your deployed Apps Script Web App URL here (ends in /exec).
 // See DEPLOY_INSTRUCTIONS.md for how to get this.
-var API_URL = 'https://script.google.com/macros/s/AKfycbxklnWCn2MGufaBmuOl6RmHsXnHThhFlZvlQFX3yJZOEwmGm-3-IWzOknu9eKk2sb39kg/exec';
+var API_URL = 'https://script.google.com/macros/s/AKfycbw4vaSiLUONJ1RFY_niZB17TK_CwKCa_Ad0l5BJNS_d13uGo0ggwMmCsEsvDXA9G42shw/exec';
 
 var API_WRITE_ACTIONS = [
   'addTransaction', 'updateTransaction', 'deleteTransaction',
@@ -20,7 +20,8 @@ var API_WRITE_ACTIONS = [
 ];
 var API_ALL_ACTIONS = API_WRITE_ACTIONS.concat([
   'getSettings', 'getCategories', 'getMonthsList',
-  'getTransactions', 'searchTransactions', 'getDashboard'
+  'getTransactions', 'searchTransactions', 'getDashboard',
+  'getBootstrap', 'getAfterWrite'
 ]);
 
 function apiCall_(action, args) {
@@ -249,16 +250,18 @@ document.addEventListener('DOMContentLoaded', initLockScreen);
     bindCalculator();
     bindCancelEdit();
 
-    google.script.run.withSuccessHandler(onSettingsLoaded).getSettings();
-
-    google.script.run.withSuccessHandler(function (months) {
-      state.months = months;
-      state.month = months[0];
+    // One combined request instead of five separate ones (settings, months,
+    // categories, dashboard, transactions) — faster app open, and avoids
+    // firing several requests at once against the Apps Script backend.
+    google.script.run.withSuccessHandler(function (data) {
+      onSettingsLoaded(data.settings);
+      onCategoriesLoaded(data.categories);
+      state.months = data.months;
+      state.month = data.month;
       renderMonthSelect();
-      google.script.run.withSuccessHandler(onCategoriesLoaded).getCategories();
-      loadDashboard();
-      loadTransactions();
-    }).getMonthsList();
+      renderDashboard(data.dashboard);
+      renderTransactions(data.transactions, false);
+    }).withFailureHandler(showErr).getBootstrap();
   }
 
   /* ---------------- Translations ---------------- */
@@ -274,8 +277,7 @@ document.addEventListener('DOMContentLoaded', initLockScreen);
     // Re-render dynamic lists so their empty-state / generated text matches the language
     populateCategorySelect();
     if (state.categories) renderCategoryLists();
-    if (state.searchQuery) runSearch(); else loadTransactions();
-    loadDashboard();
+    refreshAfterChange();
   }
 
   /* ---------------- Custom confirm modal (replaces window.confirm, which
@@ -444,15 +446,13 @@ document.addEventListener('DOMContentLoaded', initLockScreen);
         document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
         btn.classList.add('active');
         document.getElementById('page-' + btn.dataset.page).classList.add('active');
-        if (btn.dataset.page === 'transactions') { if (state.searchQuery) runSearch(); else loadTransactions(); }
-        if (btn.dataset.page === 'dashboard') loadDashboard();
+        if (btn.dataset.page === 'transactions' || btn.dataset.page === 'dashboard') refreshAfterChange();
       });
     });
 
     document.getElementById('monthSelect').addEventListener('change', function (e) {
       state.month = e.target.value;
-      loadDashboard();
-      if (!state.searchQuery) loadTransactions();
+      refreshAfterChange();
     });
   }
 
@@ -484,7 +484,11 @@ document.addEventListener('DOMContentLoaded', initLockScreen);
         document.querySelectorAll('#chartToggle .seg-btn').forEach(function (b) { b.classList.remove('active'); });
         btn.classList.add('active');
         state.chartType = btn.dataset.type;
-        loadDashboard();
+        // Both breakdowns (Expense + Income) are already in the last dashboard
+        // response, so switching the toggle is a pure local re-render — no
+        // network call needed.
+        if (state.lastDashboard) renderDashboard(state.lastDashboard);
+        else loadDashboard();
       });
     });
   }
@@ -495,7 +499,29 @@ document.addEventListener('DOMContentLoaded', initLockScreen);
     google.script.run.withSuccessHandler(renderDashboard).withFailureHandler(showErr).getDashboard(state.month);
   }
 
+  /** Combined refresh: months + dashboard + the transaction list for the current
+      month/filter, in a single request (instead of loadDashboard()+loadTransactions()
+      firing two requests at once). Used on month change, tab switches, and after
+      add/edit/delete. */
+  function loadMonthData() {
+    if (!state.month) return;
+    document.getElementById('monthLabel').textContent = monthLabel(state.month);
+    google.script.run.withSuccessHandler(function (d) {
+      state.months = d.months;
+      renderMonthSelect();
+      renderDashboard(d.dashboard);
+      if (!state.searchQuery) renderTransactions(d.transactions, false);
+    }).withFailureHandler(showErr).getAfterWrite(state.month, state.txFilter);
+  }
+
+  /** Refreshes whatever's currently on screen after something changed. */
+  function refreshAfterChange() {
+    loadMonthData();
+    if (state.searchQuery) runSearch();
+  }
+
   function renderDashboard(d) {
+    state.lastDashboard = d;
     document.getElementById('totalBalance').textContent = money(d.totalBalance);
     document.getElementById('previousBalance').textContent = money(d.previousBalance);
     document.getElementById('monthBalance').textContent = money(d.balance);
@@ -627,7 +653,7 @@ document.addEventListener('DOMContentLoaded', initLockScreen);
     var box = document.getElementById('txList');
     var emptyMsg = isSearch ? tr('noSearchResults') : tr('noFilterTx');
     box.innerHTML = list.length ? list.map(txRow).join('') : '<div class="empty-state">' + emptyMsg + '</div>';
-    attachDeleteHandlers(box, function () { if (state.searchQuery) runSearch(); else loadTransactions(); }, loadDashboard);
+    attachDeleteHandlers(box, refreshAfterChange, null);
   }
 
   /* ---------------- Search ---------------- */
@@ -787,7 +813,7 @@ document.addEventListener('DOMContentLoaded', initLockScreen);
           document.getElementById('fNotes').value = '';
           toast(state.type === 'Income' ? tr('toastIncomeAdded') : tr('toastExpenseAdded'));
         }
-        refreshMonthsThenReload();
+        refreshAfterChange();
       }).withFailureHandler(function (e) {
         btn.disabled = false;
         btn.textContent = editId ? tr('updateTransaction') : tr('addTransaction');
@@ -797,15 +823,6 @@ document.addEventListener('DOMContentLoaded', initLockScreen);
       if (editId) call.updateTransaction(editId, payload);
       else call.addTransaction(payload);
     });
-  }
-
-  function refreshMonthsThenReload() {
-    google.script.run.withSuccessHandler(function (months) {
-      state.months = months;
-      renderMonthSelect();
-      loadDashboard();
-      if (state.searchQuery) runSearch(); else loadTransactions();
-    }).getMonthsList();
   }
 
   function onCategoriesLoaded(cats) {
