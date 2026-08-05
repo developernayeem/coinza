@@ -412,30 +412,33 @@
 .lock-screen.unlocking{opacity:0;}
 .lock-content{display:flex;flex-direction:column;align-items:center;gap:16px;padding:24px;}
 
-/* Keypad modal must render ABOVE the lock screen (which sits at z-index:200) */
-#keypadModal{z-index:210;}
+/* Keypad modal must render ABOVE the lock screen (which sits at z-index:200).
+   It's also always vertically centered (not bottom-anchored like the other
+   sheet-style modals) so it never sticks to the bottom edge on phones. */
+#keypadModal{z-index:210;align-items:center;justify-content:center;}
 
 .lock-logo-wrap{
-  position:relative;width:100px;height:100px;
-  display:flex;align-items:center;justify-content:center;margin-bottom:6px;
+  position:relative;width:128px;height:128px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:8px;
 }
 .lock-pulse{
   position:absolute;inset:0;border-radius:50%;
   border:2px solid var(--sky-300);
-  animation:pulseRing 2.6s cubic-bezier(0.4,0,0.6,1) infinite;
+  animation:pulseRing 1.5s cubic-bezier(0.4,0,0.6,1) infinite;
   opacity:0;
 }
-.lock-pulse.p2{animation-delay:.85s;}
-.lock-pulse.p3{animation-delay:1.7s;}
+.lock-pulse.p2{animation-delay:.4s;}
+.lock-pulse.p3{animation-delay:.8s;}
 @keyframes pulseRing{
-  0%{transform:scale(.75);opacity:.55;}
-  100%{transform:scale(1.9);opacity:0;}
+  0%{transform:scale(.78);opacity:.6;}
+  100%{transform:scale(1.55);opacity:0;}
 }
 .lock-logo{
-  position:relative;z-index:2;width:74px;height:74px;border-radius:50%;
+  position:relative;z-index:2;width:88px;height:88px;border-radius:50%;
   background:linear-gradient(135deg,#ffffff,var(--sky-100));
   display:flex;align-items:center;justify-content:center;overflow:hidden;
-  box-shadow:0 12px 28px rgba(0,0,0,.35);
+  box-shadow:0 0 0 3px #fff,0 12px 28px rgba(0,0,0,.35);
+  padding:9px;
   animation:logoBreathe 3s ease-in-out infinite;
 }
 .lock-logo svg{width:36px;height:36px;}
@@ -446,8 +449,16 @@
 }
 
 .lock-brand{
-  color:#fff;font-family:'Outfit',sans-serif;font-weight:800;
-  font-size:24px;letter-spacing:.5px;margin:2px 0 0;
+  font-family:'Outfit',sans-serif;font-weight:800;
+  font-size:27px;letter-spacing:.8px;margin:4px 0 0;
+  background:linear-gradient(100deg,#ffffff 30%,var(--sky-300) 50%,#ffffff 70%);
+  background-size:220% auto;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:brandShine 3.5s linear infinite;
+}
+@keyframes brandShine{
+  0%{background-position:220% center;}
+  100%{background-position:-220% center;}
 }
 
 .lock-status{
@@ -459,12 +470,22 @@
   margin-top:10px;border:1px solid rgba(255,255,255,.32);border-radius:999px;
   background:rgba(255,255,255,.12);backdrop-filter:blur(6px);
   color:#fff;font-family:'Inter',sans-serif;font-weight:700;font-size:13.5px;
-  padding:13px 30px;cursor:pointer;
+  padding:13px 28px;cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+  animation:btnPulseGlow 2.2s ease-in-out infinite;
 }
+.lock-unlock-btn .lock-btn-icon{width:16px;height:16px;flex:none;}
 .lock-unlock-btn:active{background:rgba(255,255,255,.22);}
+@keyframes btnPulseGlow{
+  0%,100%{box-shadow:0 0 0 0 rgba(123,189,232,.5);}
+  50%{box-shadow:0 0 0 9px rgba(123,189,232,0);}
+}
 
 /* ---------- Keypad modal ---------- */
-.keypad-card{max-width:300px;text-align:center;padding-top:26px;}
+.keypad-card{
+  max-width:300px;width:calc(100% - 48px);text-align:center;padding-top:26px;
+  border-radius:28px;box-shadow:0 20px 50px rgba(0,29,57,.35);
+}
 .keypad-card.shake{animation:keypadShake .42s;}
 @keyframes keypadShake{
   10%,90%{transform:translateX(-1px);}
@@ -496,14 +517,20 @@
 }
 .pin-error.show{opacity:1;}
 
-.keypad-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px;}
+.keypad-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px;}
 .key-btn{
   aspect-ratio:1;border:none;border-radius:50%;
-  background:var(--sky-100);color:var(--navy-950);
-  font-family:'Outfit',sans-serif;font-weight:700;font-size:19px;cursor:pointer;
+  background:linear-gradient(160deg,#ffffff,var(--sky-100));
+  color:var(--navy-950);
+  font-family:'Outfit',sans-serif;font-weight:700;font-size:20px;cursor:pointer;
+  box-shadow:0 3px 10px rgba(10,65,116,.14),inset 0 1px 0 rgba(255,255,255,.7);
+  transition:transform .12s ease,box-shadow .12s ease,background .12s ease;
 }
-.key-btn:active{background:var(--sky-300);}
-.key-empty{background:none;cursor:default;}
-.key-empty:active{background:none;}
-.key-back{background:none;color:var(--muted);font-size:16px;}
-.key-back:active{background:none;color:var(--navy-800);}
+.key-btn:active{
+  background:linear-gradient(160deg,var(--sky-300),var(--sky-100));
+  transform:scale(.92);box-shadow:0 1px 4px rgba(10,65,116,.2);
+}
+.key-empty{background:none;box-shadow:none;cursor:default;}
+.key-empty:active{background:none;box-shadow:none;transform:none;}
+.key-back{background:none;box-shadow:none;color:var(--muted);font-size:17px;}
+.key-back:active{background:none;box-shadow:none;color:var(--navy-800);transform:scale(.92);}
